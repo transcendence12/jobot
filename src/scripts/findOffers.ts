@@ -2,6 +2,7 @@ import { BulldogJobsScrapper } from "../bot/scrapper/buldogJobsScrapper";
 import { CzyJestEldoradoScrapper } from "../bot/scrapper/czyJestEldoradoScrapper";
 import fs from "fs";
 import path from "path";
+import {createObjectCsvWriter} from "csv-writer";
 
 const searchForJobs = async () => {
   const buldogJobsscrapper = new BulldogJobsScrapper();
@@ -31,6 +32,14 @@ const searchForJobs = async () => {
 
   const outputPath = path.join(__dirname, '../../scrap-results/results.json');
   fs.writeFileSync(outputPath, JSON.stringify(formattedOffers, null, 2), 'utf-8');
+  console.log(`Offers saved to ${outputPath}`);
+
+  const writeToCSV = createObjectCsvWriter({
+    path: path.join(__dirname, '../../scrap-results/results.csv'),
+    header: Object.keys(formattedOffers[0]).map((key) => ({id: key, title: key}))
+  })
+
+  await writeToCSV.writeRecords(formattedOffers);
   console.log(`Offers saved to ${outputPath}`);
 };
 
