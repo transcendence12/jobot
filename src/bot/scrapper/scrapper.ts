@@ -29,10 +29,10 @@ export class Scrapper {
     element: any | null,
     selector: string,
     attribute?: string
-  ) {
-    if (!this.page || !element) return "";
+  ): Promise<string | null> {
+    if (!this.page || !element || !selector) return null;
     const childElement = await element.$(selector);
-    if (!childElement) return "";
+    if (!childElement) return null;
 
     if (attribute) {
       return await this.page.evaluate(
@@ -42,7 +42,7 @@ export class Scrapper {
       );
     } else {
       return await this.page.evaluate(
-        (el) => el.textContent.trim(),
+        (el) => el.textContent?.trim() || null,
         childElement
       );
     }
@@ -58,18 +58,18 @@ export class Scrapper {
     scrapingConfig: {
       containerSelector: string;
       fields: {
-        jobName: keyof T;
+        name: keyof T;
         selector: string;
         attribute?: string;
       }[];
     },
     maxRecords: number
-  ): Promise<T[]> {
+  ): Promise<(T & { element: any })[]> {
     if (!this.page) {
       throw new Error("Page not initialized");
     }
 
-    const results: T[] = [];
+    const results: (T & { element: any })[] = [];
     const elements = await this.page.$$(scrapingConfig.containerSelector);
 
     for (let i = 0; i < Math.min(maxRecords, elements.length); i++) {
@@ -77,15 +77,13 @@ export class Scrapper {
       const extractedData = {} as T;
 
       for (const field of scrapingConfig.fields) {
-        const value = await this.extractFromElement(
-          element,
-          field.selector,
-          field.attribute
-        );
-        extractedData[field.jobName] = value as T[keyof T];
+        const value = field.selector
+          ? await this.extractFromElement(element, field.selector, field.attribute)
+          : null;
+        extractedData[field.name] = value as T[keyof T];
       }
 
-      results.push(extractedData);
+      results.push({ ...extractedData, element });
     }
 
     return results;
@@ -95,27 +93,43 @@ export class Scrapper {
    * Scrapes job offers from the current page up to the maxRecords limit
    * @returns An array of job offers
    */
-  async scrapeJobOffers(maxRecords: number): Promise<string[]> {
-    interface JobOffer {
-      title: string;
-    }
+  // async scrapeJobOffers(maxRecords: number): Promise<string[]> {
+  //   interface JobOffer {
+  //     title: string;
+  //   }
 
-    const results = await this.scrapeElements<JobOffer>(
-      {
-        containerSelector: '.container a',
-        fields: [
-          {
-            jobName: 'title',
-            selector: 'div > h3'
-          }
-        ]
-      },
-      maxRecords
+  //   const results = await this.scrapeElements<JobOffer>(
+  //     {
+  //       containerSelector: '.container a',
+  //       fields: [
+  //         {
+  //           name: 'title',
+  //           selector: 'div > h3'
+  //         }
+  //       ]
+  //     },
+  //     maxRecords
+  //   );
+
+  //   return results.map(result => result.title);
+  // }
+
+  async extractMultipleFromElement(
+    element: any | null,
+    selector: string
+  ): Promise<string[]> {
+    if (!this.page || !element || !selector) return [];
+    const childElements = await element.$$(selector);
+    const texts = await Promise.all(
+      childElements.map(async (child) => {
+        return await this.page.evaluate(
+          (el) => el.textContent?.trim() || "",
+          child
+        );
+      })
     );
-
-    return results.map(result => result.title);
+    return texts.filter(text => text !== "");
   }
-
 
   async close() {
     if (this.browser) {

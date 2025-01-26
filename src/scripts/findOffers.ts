@@ -1,21 +1,9 @@
-import { Scrapper } from "../bot/scrapper/scrapper";
-import { ScrapperOptions } from "../bot/scrapper/types";
+import { BulldogJobsScrapper } from "../bot/scrapper/buldogJobsScrapper";
 
-const findOffers = async (searchValue: string, maxRecords: number = 10) => {
-  console.log("Scrapping...");
-  const options: ScrapperOptions = {
-    searchValue,
-    maxRecords,
-  };
-  const scrapper = new Scrapper();
-  scrapper.options = options;
-  await scrapper.init();
-  await scrapper.navigateTo(`https://bulldogjob.pl/companies/jobs/s/role,${searchValue}`);
-
-  const offers = await scrapper.scrapeJobOffers(maxRecords);
-  console.log(`${offers.length} offers found:`, offers);
-
-  await scrapper.close();
+const searchForJobs = async () => {
+  const scrapper = new BulldogJobsScrapper();
+  const jobOffers = await scrapper.scrapeBulldogJobs('backend', 10);
+  console.log(jobOffers);
 };
 
-findOffers("backend", 10);
+searchForJobs();
