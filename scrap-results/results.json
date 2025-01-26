@@ -1,0 +1,152 @@
+[
+  {
+    "Title": null,
+    "Description": null,
+    "Company": null,
+    "Salary_From": "",
+    "Currency": null,
+    "Offer_URL": "/privacy_policy",
+    "Technologies": [],
+    "Added_At": null
+  },
+  {
+    "Title": "Senior Magento Developer",
+    "Description": null,
+    "Company": "Sii Polska",
+    "Salary_From": "",
+    "Currency": null,
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/169834-senior-magento-developer-warsaw-gdansk-wroclaw-poznan-krakow-lodz-lublin-katowice-rzeszow-czestochowa-pila-bydgoszcz-bialystok-gliwice-szczecin-torun-sii-polska",
+    "Technologies": [
+      "Docker",
+      "GraphQL",
+      "MySQL"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Senior .NET Developer Backend",
+    "Description": null,
+    "Company": "Reply Polska",
+    "Salary_From": "16 000",
+    "Salary_To": "30 000",
+    "Currency": "PLN",
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170451-senior-net-developer-backend-katowice-reply-polska",
+    "Technologies": [
+      ".NET",
+      "Azure",
+      "microservices"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Java Developer – banking industry",
+    "Description": null,
+    "Company": "Sii Polska",
+    "Salary_From": "",
+    "Currency": null,
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170044-java-developer-banking-industry-warsaw-sii-polska",
+    "Technologies": [
+      "AWS",
+      "Git",
+      "Hibernate"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Fullstack Java Developer",
+    "Description": null,
+    "Company": "Sii Polska",
+    "Salary_From": "",
+    "Currency": null,
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170042-fullstack-java-developer-warsaw-gdansk-wroclaw-poznan-krakow-lodz-lublin-katowice-rzeszow-czestochowa-pila-bydgoszcz-bialystok-gliwice-szczecin-torun-sii-polska",
+    "Technologies": [
+      "Kotlin",
+      "React.js/ Bue/ks",
+      "Cloud Computing"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Java Team Leader",
+    "Description": null,
+    "Company": "Power Media",
+    "Salary_From": "Znamy",
+    "Currency": "widełki",
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170336-java-team-leader-warszawa-lodz-power-media",
+    "Technologies": [
+      "Git",
+      "Java",
+      "JavaScript"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Senior .Net Developer (with Azure)",
+    "Description": null,
+    "Company": "1dea",
+    "Salary_From": "23 200",
+    "Salary_To": "26 400",
+    "Currency": "PLN",
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170435-senior-net-developer-with-azure-1dea",
+    "Technologies": [
+      ".NET",
+      "Azure",
+      "Entity Framework"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Golang Software Engineer",
+    "Description": null,
+    "Company": "Reply Polska",
+    "Salary_From": "13 000",
+    "Salary_To": "22 000",
+    "Currency": "PLN",
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170439-golang-software-engineer-katowice-reply-polska",
+    "Technologies": [],
+    "Added_At": null
+  },
+  {
+    "Title": "Architect Java Developer",
+    "Description": null,
+    "Company": "LeverX",
+    "Salary_From": "",
+    "Currency": null,
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170426-architect-java-developer-wroclaw-warsaw-leverx",
+    "Technologies": [
+      "Apache",
+      "Kafka",
+      "SQL"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Senior WPF Developer",
+    "Description": null,
+    "Company": "LeverX",
+    "Salary_From": "",
+    "Currency": null,
+    "Offer_URL": "https://bulldogjob.pl/companies/jobs/170421-senior-wpf-developer-wroclaw-warsaw-leverx",
+    "Technologies": [
+      ".NET",
+      "WPF",
+      "Web API"
+    ],
+    "Added_At": null
+  },
+  {
+    "Title": "Senior Web UI Developer",
+    "Description": null,
+    "Company": "@Wipro IT Services Poland",
+    "Salary_From": "21 000",
+    "Salary_To": "31 500",
+    "Currency": "PLN",
+    "Offer_URL": "https://czyjesteldorado.pl/praca/86369-senior-web-ui-developer-wipro-it-services-poland",
+    "Technologies": [
+      "JavaScript",
+      "TypeScript",
+      "React"
+    ],
+    "Added_At": null
+  }
+]
