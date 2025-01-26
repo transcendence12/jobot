@@ -49,25 +49,71 @@ export class Scrapper {
   }
 
   /**
-   * Scrapes job offers from the current page up to the maxRecords limit
-   * @returns An array of job offers
+   * Generic method to scrape elements from the page
+   * @param scrapingConfig - Configuration for scraping elements
+   * @param maxRecords - Maximum number of records to scrape
+   * @returns Array of extracted data
    */
-  async scrapeJobOffers(maxRecords: number): Promise<string[]> {
+  async scrapeElements<T>(
+    scrapingConfig: {
+      containerSelector: string;
+      fields: {
+        name: keyof T;
+        selector: string;
+        attribute?: string;
+      }[];
+    },
+    maxRecords: number
+  ): Promise<T[]> {
     if (!this.page) {
       throw new Error("Page not initialized");
     }
 
-    const jobOffers: string[] = [];
-    const jobSelector = ".container a";
+    const results: T[] = [];
+    const elements = await this.page.$$(scrapingConfig.containerSelector);
 
-    const offers = await this.page.$$(jobSelector);
-    for (let i = 0; i < Math.min(maxRecords, offers.length); i++) {
-      const offer = offers[i];
-      const title = await this.extractFromElement(offer, 'div > h3');
-      jobOffers.push(title);
+    for (let i = 0; i < Math.min(maxRecords, elements.length); i++) {
+      const element = elements[i];
+      const extractedData = {} as T;
+
+      for (const field of scrapingConfig.fields) {
+        const value = await this.extractFromElement(
+          element,
+          field.selector,
+          field.attribute
+        );
+        extractedData[field.name] = value as T[keyof T];
+      }
+
+      results.push(extractedData);
     }
 
-    return jobOffers;
+    return results;
+  }
+
+  /**
+   * Scrapes job offers from the current page up to the maxRecords limit
+   * @returns An array of job offers
+   */
+  async scrapeJobOffers(maxRecords: number): Promise<string[]> {
+    interface JobOffer {
+      title: string;
+    }
+
+    const results = await this.scrapeElements<JobOffer>(
+      {
+        containerSelector: '.container a',
+        fields: [
+          {
+            name: 'title',
+            selector: 'div > h3'
+          }
+        ]
+      },
+      maxRecords
+    );
+
+    return results.map(result => result.title);
   }
 
   async close() {
