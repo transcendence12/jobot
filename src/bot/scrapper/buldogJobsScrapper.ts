@@ -18,8 +18,9 @@ export class BulldogJobsScrapper extends Scrapper {
     maxRecords: number
   ): Promise<JobOffer[]> {
     await this.init();
+    const encodedSearchValue = encodeURIComponent(searchValue);
     await this.navigateTo(
-      `https://bulldogjob.pl/companies/jobs/s/role,${searchValue}`
+      `https://bulldogjob.pl/companies/jobs/s/role,${encodedSearchValue}`
     );
 
     const containerSelector = ".container a";
@@ -37,7 +38,7 @@ export class BulldogJobsScrapper extends Scrapper {
             name: "salary",
             selector: "div.lg\\:font-extrabold.md\\:text-xl.text-dm.leading-8",
           },
-          { name: "addedAt", selector: null },
+          { name: "addedAt", selector: "" },
         ],
       },
       maxRecords
