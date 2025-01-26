@@ -48,6 +48,28 @@ export class Scrapper {
     }
   }
 
+  /**
+   * Scrapes job offers from the current page up to the maxRecords limit
+   * @returns An array of job offers
+   */
+  async scrapeJobOffers(maxRecords: number): Promise<string[]> {
+    if (!this.page) {
+      throw new Error("Page not initialized");
+    }
+
+    const jobOffers: string[] = [];
+    const jobSelector = ".container a";
+
+    const offers = await this.page.$$(jobSelector);
+    for (let i = 0; i < Math.min(maxRecords, offers.length); i++) {
+      const offer = offers[i];
+      const title = await this.extractFromElement(offer, 'div > h3');
+      jobOffers.push(title);
+    }
+
+    return jobOffers;
+  }
+
   async close() {
     if (this.browser) {
       await this.browser.close();

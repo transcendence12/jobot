@@ -12,10 +12,10 @@ const findOffers = async (searchValue: string, maxRecords: number = 10) => {
   await scrapper.init();
   await scrapper.navigateTo(`https://bulldogjob.pl/companies/jobs/s/role,${searchValue}`);
 
+  const offers = await scrapper.scrapeJobOffers(maxRecords);
+  console.log(`${offers.length} offers found:`, offers);
 
-  setTimeout(() => {
-    console.log(`${options.maxRecords} offers found.`);
-  }, 3000);
+  await scrapper.close();
 };
 
 findOffers("backend", 10);
