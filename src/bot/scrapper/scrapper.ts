@@ -58,7 +58,7 @@ export class Scrapper {
     scrapingConfig: {
       containerSelector: string;
       fields: {
-        name: keyof T;
+        jobName: keyof T;
         selector: string;
         attribute?: string;
       }[];
@@ -82,7 +82,7 @@ export class Scrapper {
           field.selector,
           field.attribute
         );
-        extractedData[field.name] = value as T[keyof T];
+        extractedData[field.jobName] = value as T[keyof T];
       }
 
       results.push(extractedData);
@@ -105,7 +105,7 @@ export class Scrapper {
         containerSelector: '.container a',
         fields: [
           {
-            name: 'title',
+            jobName: 'title',
             selector: 'div > h3'
           }
         ]
@@ -115,6 +115,7 @@ export class Scrapper {
 
     return results.map(result => result.title);
   }
+
 
   async close() {
     if (this.browser) {
