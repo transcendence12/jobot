@@ -20,7 +20,7 @@ export class Bot {
 
   setupCronJob() {
     // Set up the CRON job to run every day at 9:00 from Monday to Friday
-    schedule.scheduleJob("0 9 * * *", this.scrapeOffers.bind(this));
+    schedule.scheduleJob("'0 9 * * 1-5'", this.scrapeOffers.bind(this));
     console.log("CRON job has been set up.");
   }
 }
