@@ -3,6 +3,18 @@ import { findOffers } from './scripts/findOffers';
 
 const PORT = process.env.PORT || 4200;
 
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received. Cleaning up...');
+  // Add any cleanup logic here
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received. Cleaning up...');
+  // Add any cleanup logic here
+  process.exit(0);
+});
+
 const server: Server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -19,6 +31,7 @@ const server: Server = createServer(async (req: IncomingMessage, res: ServerResp
   const queryParams = new URLSearchParams(urlParts[1] || '');
 
   if (req.method === 'GET' && path.startsWith('/offers/')) {
+    console.log('Received request for offers');
     try {
       const searchValue = path.split('/offers/')[1];
       const limit = parseInt(queryParams.get('limit') || '10');
@@ -29,13 +42,29 @@ const server: Server = createServer(async (req: IncomingMessage, res: ServerResp
         return;
       }
 
+      console.log(`Starting search for: ${searchValue} with limit: ${limit}`);
       const jobs = await findOffers(decodeURIComponent(searchValue), limit);
+      console.log('Jobs found:', JSON.stringify(jobs, null, 2));
+      
+      if (!jobs || jobs.length === 0) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'No jobs found' }));
+        return;
+      }
+
+      const response = { data: jobs };
+      console.log('Sending response:', JSON.stringify(response, null, 2));
       
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ data: jobs }));
+      res.end(JSON.stringify(response));
     } catch (error) {
+      console.error('Error during request:', error);
       res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Internal server error' }));
+      res.end(JSON.stringify({ 
+        error: 'Internal server error', 
+        details: error.message,
+        stack: error.stack 
+      }));
     }
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });

@@ -26,6 +26,7 @@ export class BulldogJobsScrapper extends Scrapper {
       await this.navigateTo(
         `https://bulldogjob.pl/companies/jobs/s/role,${encodedSearchValue}`
       );
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       // Wait for the main content to load
       await this.page?.waitForSelector(".container a");

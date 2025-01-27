@@ -12,9 +12,21 @@ export class Scrapper {
   protected options: ScrapperOptions | null = null;
 
   async init() {
-    this.browser = await puppeteer.launch({ headless: false, slowMo: 250 });
-    const pages = await this.browser.pages();
-    this.page = pages[0]; // Use the initial page
+    if (!this.browser) {
+      this.browser = await puppeteer.launch({ 
+        headless: false, 
+        slowMo: 250,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+    }
+    
+    try {
+      this.page = await this.browser.newPage();
+      await this.page.setDefaultNavigationTimeout(30000);
+    } catch (error) {
+      console.error('Error during initialization:', error);
+      throw error;
+    }
   }
 
   async navigateTo(url: string) {
@@ -114,8 +126,13 @@ export class Scrapper {
   }
 
   async close() {
-    if (this.browser) {
-      await this.browser.close();
+    try {
+      if (this.page) {
+        await this.page.close();
+        this.page = null;
+      }
+    } catch (error) {
+      console.error('Error closing page:', error);
     }
   }
 }
