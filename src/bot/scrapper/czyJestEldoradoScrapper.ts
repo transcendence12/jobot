@@ -1,4 +1,5 @@
 import { Scrapper } from "./scrapper";
+import { ScrapperOptions } from "./types";
 
 interface JobOffer {
   title: string | null;
@@ -13,15 +14,18 @@ interface JobOffer {
 }
 
 export class CzyJestEldoradoScrapper extends Scrapper {
-  async scrapeCzyJestEldorado(
-    searchValue: string,
-    maxRecords: number
-  ): Promise<JobOffer[]> {
+  constructor(options: ScrapperOptions) {
+    super();
+    this.options = options;
+  }
+
+  async scrapeCzyJestEldorado(): Promise<JobOffer[]> {
     await this.init();
-    const encodedSearchValue = encodeURIComponent(searchValue);
+    const encodedSearchValue = encodeURIComponent(this.options.searchValue);
     await this.navigateTo(
       `https://czyjesteldorado.pl/search?q=${encodedSearchValue}`
     );
+    await this.page?.waitForSelector("div.row.offer-list");
     const containerSelector = "div.row.offer-list";
 
     const results = await this.scrapeElements<
@@ -40,7 +44,7 @@ export class CzyJestEldoradoScrapper extends Scrapper {
           { name: "addedAt", selector: "" },
         ],
       },
-      maxRecords
+      this.options.maxRecords
     );
 
     const formattedResults = await Promise.all(results.map(async (result) => {

@@ -2,21 +2,25 @@ import { BulldogJobsScrapper } from "../bot/scrapper/buldogJobsScrapper";
 import { CzyJestEldoradoScrapper } from "../bot/scrapper/czyJestEldoradoScrapper";
 import fs from "fs";
 import path from "path";
-import {createObjectCsvWriter} from "csv-writer";
+import { createObjectCsvWriter } from "csv-writer";
+import { ScrapperOptions } from "../bot/scrapper/types";
 
-const searchForJobs = async () => {
-  const buldogJobsscrapper = new BulldogJobsScrapper();
-  const fromBuldogJobsjobOffers = await buldogJobsscrapper.scrapeBulldogJobs('backend', 10);
-  console.log(fromBuldogJobsjobOffers);
+export const findOffers = async (searchTerm: string, limit: number = 10) => {
+  const options: ScrapperOptions = {
+    searchValue: searchTerm,
+    maxRecords: limit,
+  };
 
-  console.log("--------------------------------");
+  const buldogJobsScrapper = new BulldogJobsScrapper(options);
+  const czyJestEldoradoScrapper = new CzyJestEldoradoScrapper(options);
 
-  const czyJestEldoradoScrapper = new CzyJestEldoradoScrapper();
-  const fromCzyJestEldoradoScrapper = await czyJestEldoradoScrapper.scrapeCzyJestEldorado('frontend', 10);
-  console.log(fromCzyJestEldoradoScrapper);
+  const fromBuldogJobsJobOffers = await buldogJobsScrapper.scrapeBulldogJobs();
+  const fromCzyJestEldoradoScrapper = await czyJestEldoradoScrapper.scrapeCzyJestEldorado();
 
-  const allOffers = [...fromBuldogJobsjobOffers, ...fromCzyJestEldoradoScrapper];
-  console.log(allOffers);
+  const allOffers = [
+    ...fromBuldogJobsJobOffers,
+    ...fromCzyJestEldoradoScrapper,
+  ];
 
   const formattedOffers = allOffers.map((offer) => ({
     Title: offer.title,
@@ -30,17 +34,22 @@ const searchForJobs = async () => {
     Added_At: offer.addedAt,
   }));
 
-  const outputPath = path.join(__dirname, '../../scrap-results/results.json');
-  fs.writeFileSync(outputPath, JSON.stringify(formattedOffers, null, 2), 'utf-8');
+  const outputPath = path.join(__dirname, "../../scrap-results/results.json");
+  fs.writeFileSync(
+    outputPath,
+    JSON.stringify(formattedOffers, null, 2),
+    "utf-8"
+  );
   console.log(`Offers saved to ${outputPath}`);
 
   const writeToCSV = createObjectCsvWriter({
-    path: path.join(__dirname, '../../scrap-results/results.csv'),
-    header: Object.keys(formattedOffers[0]).map((key) => ({id: key, title: key}))
-  })
+    path: path.join(__dirname, "../../scrap-results/results.csv"),
+    header: Object.keys(formattedOffers[0]).map((key) => ({
+      id: key,
+      title: key,
+    })),
+  });
 
   await writeToCSV.writeRecords(formattedOffers);
-  console.log(`Offers saved to ${outputPath}`);
+  console.log(`Offers saved to ${path.join(__dirname, "../../scrap-results/results.csv")}`);
 };
-
-searchForJobs();
