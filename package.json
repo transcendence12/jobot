@@ -1,7 +1,7 @@
 {
   "scripts": {
     "server": "ts-node ./src/server.ts",
-    "scrap:offers": "ts-node ./src/scripts/findOffers.ts"
+    "scrap:offers": "ts-node ./src/scripts/runScrapper.ts"
   },
   "devDependencies": {
     "@types/node": "^18.15.7",
@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "csv-writer": "^1.6.0",
-    "puppeteer": "^24.1.1"
+    "puppeteer": "^24.1.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }

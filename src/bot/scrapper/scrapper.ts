@@ -1,14 +1,20 @@
-import puppeteer, { Browser, Page } from "puppeteer";
+import { Browser, Page } from "puppeteer";
 import { ScrapperOptions } from "./types";
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+puppeteer.use(StealthPlugin())
+
 export class Scrapper {
   // Scrapper should be a set of methods that you could use for navigating through scrapped website.
   browser: Browser | null = null;
   page: Page | null = null;
-  options: ScrapperOptions | null = null;
+  protected options: ScrapperOptions | null = null;
 
   async init() {
     this.browser = await puppeteer.launch({ headless: false, slowMo: 250 });
-    this.page = await this.browser.newPage();
+    const pages = await this.browser.pages();
+    this.page = pages[0]; // Use the initial page
   }
 
   async navigateTo(url: string) {
@@ -16,6 +22,7 @@ export class Scrapper {
       throw new Error("Page not initialized");
     }
     await this.page.goto(url);
+    await new Promise(resolve => setTimeout(resolve, 5000));
   }
 
   /**
@@ -88,31 +95,6 @@ export class Scrapper {
 
     return results;
   }
-
-  /**
-   * Scrapes job offers from the current page up to the maxRecords limit
-   * @returns An array of job offers
-   */
-  // async scrapeJobOffers(maxRecords: number): Promise<string[]> {
-  //   interface JobOffer {
-  //     title: string;
-  //   }
-
-  //   const results = await this.scrapeElements<JobOffer>(
-  //     {
-  //       containerSelector: '.container a',
-  //       fields: [
-  //         {
-  //           name: 'title',
-  //           selector: 'div > h3'
-  //         }
-  //       ]
-  //     },
-  //     maxRecords
-  //   );
-
-  //   return results.map(result => result.title);
-  // }
 
   async extractMultipleFromElement(
     element: any | null,
