@@ -4,5 +4,13 @@ export interface ScrapperOptions {
 }
 
 export interface JobOffer {
-  title: string;
+  title: string | null;
+  description: string | null;
+  company: string | null;
+  salaryFrom: string | null;
+  salaryTo: string | null;
+  currency: string | null;
+  offerURL: string | null;
+  technologies: string[];
+  addedAt: string | null;
 }

@@ -16,7 +16,7 @@ export const findOffers = async (searchTerm: string, limit: number = 10) => {
     };
 
     browser = await puppeteer.launch({ 
-      headless: false, 
+      headless: true,
       slowMo: 250,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
@@ -28,24 +28,23 @@ export const findOffers = async (searchTerm: string, limit: number = 10) => {
     buldogJobsScrapper.browser = browser;
     czyJestEldoradoScrapper.browser = browser;
 
-    // Run scrapers sequentially to avoid conflicts
-    console.log('Starting Bulldog Jobs scraper...');
-    const fromBuldogJobsJobOffers = await buldogJobsScrapper.scrapeBulldogJobs();
-    await buldogJobsScrapper.close(); // Close only the page
-
-    console.log('Starting CzyJestEldorado scraper...');
-    const fromCzyJestEldoradoScrapper = await czyJestEldoradoScrapper.scrapeCzyJestEldorado();
-    await czyJestEldoradoScrapper.close(); // Close only the page
-
-    console.log('Bulldog Jobs results:', fromBuldogJobsJobOffers);
-    console.log('Czy Jest Eldorado results:', fromCzyJestEldoradoScrapper);
+    // Run scrapers in parallel
+    console.log('Starting scrapers...');
+    const [fromBuldogJobsJobOffers, fromCzyJestEldoradoScrapper] = await Promise.all([
+      buldogJobsScrapper.scrapeBulldogJobs().catch(error => {
+        console.error('Error in BulldogJobs scraper:', error);
+        return [];
+      }),
+      czyJestEldoradoScrapper.scrapeCzyJestEldorado().catch(error => {
+        console.error('Error in CzyJestEldorado scraper:', error);
+        return [];
+      })
+    ]);
 
     const allOffers = [
       ...fromBuldogJobsJobOffers,
       ...fromCzyJestEldoradoScrapper,
     ].filter(offer => offer !== null);
-
-    console.log('Combined offers:', allOffers);
 
     if (!allOffers.length) {
       console.log('No offers found');
@@ -65,8 +64,6 @@ export const findOffers = async (searchTerm: string, limit: number = 10) => {
     }));
 
     await saveToFiles(formattedOffers);
-    console.log('Returning formatted offers:', formattedOffers);
-
     return formattedOffers;
   } catch (error) {
     console.error('Error in findOffers:', error);
