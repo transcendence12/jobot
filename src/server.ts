@@ -1,7 +1,9 @@
 import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
 import { findOffers } from './scripts/findOffers';
+import { Cache } from './utils/cache';
 
 const PORT = process.env.PORT || 4200;
+const cache = Cache.getInstance();
 
 const server: Server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
   // CORS headers
@@ -36,6 +38,30 @@ const server: Server = createServer(async (req: IncomingMessage, res: ServerResp
         return;
       }
 
+      // Create cache key
+      const cacheKey = `offers:${searchValue}:${limit}`;
+      
+      // Try to get data from cache
+      const cachedData = cache.get(cacheKey);
+      if (cachedData) {
+        console.log('Cache hit! Returning cached data from:', cacheKey);
+        console.log('Cache timestamp:', new Date(cache.getTimestamp(cacheKey)).toLocaleString());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          status: 'success',
+          data: cachedData,
+          meta: {
+            total: cachedData.length,
+            search: searchValue,
+            limit,
+            cached: true
+          }
+        }));
+        return;
+      } else {
+        console.log('Cache miss! Fetching fresh data for:', cacheKey);
+      }
+
       console.log(`Starting search for: ${searchValue} with limit: ${limit}`);
       const jobs = await findOffers(decodeURIComponent(searchValue), limit);
       
@@ -48,13 +74,17 @@ const server: Server = createServer(async (req: IncomingMessage, res: ServerResp
         return;
       }
 
+      // Store in cache
+      cache.set(cacheKey, jobs);
+
       const response = { 
         status: 'success',
         data: jobs,
         meta: {
           total: jobs.length,
           search: searchValue,
-          limit
+          limit,
+          cached: false
         }
       };
 
@@ -91,6 +121,7 @@ server.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
+  cache.clear();
   server.close(() => {
     console.log('Server closed');
     process.exit(0);
@@ -99,6 +130,7 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   console.log('SIGINT received. Shutting down gracefully...');
+  cache.clear();
   server.close(() => {
     console.log('Server closed');
     process.exit(0);
