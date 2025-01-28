@@ -1,17 +1,5 @@
 import { Scrapper } from "./scrapper";
-import { ScrapperOptions } from "./types";
-
-interface JobOffer {
-  title: string | null;
-  description: string | null;
-  company: string | null;
-  salaryFrom: string | null;
-  salaryTo: string | null;
-  currency: string | null;
-  offerURL: string | null;
-  technologies: string[];
-  addedAt: string | null;
-}
+import { ScrapperOptions, JobOffer } from "./types";
 
 export class BulldogJobsScrapper extends Scrapper {
   constructor(options: ScrapperOptions) {
@@ -26,6 +14,7 @@ export class BulldogJobsScrapper extends Scrapper {
       await this.navigateTo(
         `https://bulldogjob.pl/companies/jobs/s/role,${encodedSearchValue}`
       );
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       // Wait for the main content to load
       await this.page?.waitForSelector(".container a");

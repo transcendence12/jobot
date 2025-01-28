@@ -4,52 +4,104 @@ import fs from "fs";
 import path from "path";
 import { createObjectCsvWriter } from "csv-writer";
 import { ScrapperOptions } from "../bot/scrapper/types";
+import puppeteer from "puppeteer";
 
 export const findOffers = async (searchTerm: string, limit: number = 10) => {
-  const options: ScrapperOptions = {
-    searchValue: searchTerm,
-    maxRecords: limit,
-  };
+  let browser = null;
+  try {
+    console.log(`Searching for: ${searchTerm} with limit: ${limit}`);
+    const options: ScrapperOptions = {
+      searchValue: searchTerm,
+      maxRecords: limit,
+    };
 
-  const buldogJobsScrapper = new BulldogJobsScrapper(options);
-  const czyJestEldoradoScrapper = new CzyJestEldoradoScrapper(options);
+    browser = await puppeteer.launch({ 
+      headless: true,
+      slowMo: 250,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
 
-  const fromBuldogJobsJobOffers = await buldogJobsScrapper.scrapeBulldogJobs();
-  const fromCzyJestEldoradoScrapper = await czyJestEldoradoScrapper.scrapeCzyJestEldorado();
+    const buldogJobsScrapper = new BulldogJobsScrapper(options);
+    const czyJestEldoradoScrapper = new CzyJestEldoradoScrapper(options);
 
-  const allOffers = [
-    ...fromBuldogJobsJobOffers,
-    ...fromCzyJestEldoradoScrapper,
-  ];
+    // Share the browser instance
+    buldogJobsScrapper.browser = browser;
+    czyJestEldoradoScrapper.browser = browser;
 
-  const formattedOffers = allOffers.map((offer) => ({
-    Title: offer.title,
-    Description: offer.description,
-    Company: offer.company,
-    Salary_From: offer.salaryFrom,
-    Salary_To: offer.salaryTo,
-    Currency: offer.currency,
-    Offer_URL: offer.offerURL,
-    Technologies: offer.technologies,
-    Added_At: offer.addedAt,
-  }));
+    // Run scrapers in parallel
+    console.log('Starting scrapers...');
+    const [fromBuldogJobsJobOffers, fromCzyJestEldoradoScrapper] = await Promise.all([
+      buldogJobsScrapper.scrapeBulldogJobs().catch(error => {
+        console.error('Error in BulldogJobs scraper:', error);
+        return [];
+      }),
+      czyJestEldoradoScrapper.scrapeCzyJestEldorado().catch(error => {
+        console.error('Error in CzyJestEldorado scraper:', error);
+        return [];
+      })
+    ]);
 
-  const outputPath = path.join(__dirname, "../../scrap-results/results.json");
-  fs.writeFileSync(
-    outputPath,
-    JSON.stringify(formattedOffers, null, 2),
-    "utf-8"
-  );
-  console.log(`Offers saved to ${outputPath}`);
+    const allOffers = [
+      ...fromBuldogJobsJobOffers,
+      ...fromCzyJestEldoradoScrapper,
+    ].filter(offer => offer !== null);
 
-  const writeToCSV = createObjectCsvWriter({
-    path: path.join(__dirname, "../../scrap-results/results.csv"),
-    header: Object.keys(formattedOffers[0]).map((key) => ({
-      id: key,
-      title: key,
-    })),
-  });
+    if (!allOffers.length) {
+      console.log('No offers found');
+      return [];
+    }
 
-  await writeToCSV.writeRecords(formattedOffers);
-  console.log(`Offers saved to ${path.join(__dirname, "../../scrap-results/results.csv")}`);
+    const formattedOffers = allOffers.map((offer) => ({
+      Title: offer.title,
+      Description: offer.description,
+      Company: offer.company,
+      Salary_From: offer.salaryFrom,
+      Salary_To: offer.salaryTo,
+      Currency: offer.currency,
+      Offer_URL: offer.offerURL,
+      Technologies: offer.technologies,
+      Added_At: offer.addedAt,
+    }));
+
+    await saveToFiles(formattedOffers);
+    return formattedOffers;
+  } catch (error) {
+    console.error('Error in findOffers:', error);
+    throw error;
+  } finally {
+    if (browser) {
+      try {
+        await browser.close();
+        console.log('Browser closed successfully');
+      } catch (error) {
+        console.error('Error closing browser:', error);
+      }
+    }
+  }
 };
+
+async function saveToFiles(formattedOffers) {
+  try {
+    const outputPath = path.join(__dirname, "../../scrap-results/results.json");
+    fs.writeFileSync(
+      outputPath,
+      JSON.stringify(formattedOffers, null, 2),
+      "utf-8"
+    );
+    console.log(`Offers saved to ${outputPath}`);
+
+    const writeToCSV = createObjectCsvWriter({
+      path: path.join(__dirname, "../../scrap-results/results.csv"),
+      header: Object.keys(formattedOffers[0]).map((key) => ({
+        id: key,
+        title: key,
+      })),
+    });
+
+    await writeToCSV.writeRecords(formattedOffers);
+    console.log(`Offers saved to CSV`);
+  } catch (error) {
+    console.error('Error saving files:', error);
+    throw error;
+  }
+}
